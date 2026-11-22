@@ -32,3 +32,6 @@ go.work.sum
 # Editor/IDE
 .DS_Store
 .idea/
+
+
+builds/
