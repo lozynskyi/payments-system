@@ -31,4 +31,17 @@ func NewPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	cfg.ConnConfig.ConnectTimeout = 5 * time.Second
 
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("postgres: create poll %w", err)
+	}
+
+	// The pool connects lazily. Ping now so the bad dsn or database that is down
+	// fails at startup, instead of on the first request.
+
+	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	if err := pool.Ping(pingCtx); err != nil {
+		return nil, fmt.Errorf("postgres: ping pool: %w", err)
+	}
+	return pool, nil
 }
